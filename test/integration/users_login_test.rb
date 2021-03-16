@@ -28,6 +28,8 @@ class UsersLoginTest < ActionDispatch::IntegrationTest
     delete logout_path
     assert_not is_logged_in?
     assert_redirected_to root_url
+    # Simulate a user clicking logout in a second window
+    delete logout_path
     follow_redirect!
     assert_template 'static_pages/home'
     assert_select "a[href=?]", login_path
@@ -44,5 +46,15 @@ class UsersLoginTest < ActionDispatch::IntegrationTest
     assert_not_empty flash
     get root_path
     assert_empty flash
+  end
+
+  test "checking remember me checkbox causes user to be remembered" do
+    log_in_as(@user, remember_me: '1')
+    assert_equal cookies[:remember_token], assigns(:user).remember_token
+  end
+
+  test "user should not be remembered when remember me box unchecked" do
+    log_in_as(@user, remember_me: '0')
+    assert cookies[:remember_token].blank?
   end
 end
